@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import List, Tuple, Set, Optional
 
 class WordSearch:
-    def __init__(self, words: List[str]):
+    def __init__(self, words: List[str], size: Optional[int] = None):
         self.words = [word.upper().replace(' ', '') for word in words]
         self.longest_word = max(len(word) for word in self.words) if self.words else 0
-        self.size = max(self.longest_word + 2, 10)  # Minimum size 10x10 for small word lists
+        self.size = size or max(self.longest_word + 2, 10)  # Minimum size 10x10 for small word lists
         self.grid = [[None for _ in range(self.size)] for _ in range(self.size)]
         self.placed_words = set()
         self.word_positions = []  # Store (word, row, col, dx, dy) for each placed word
@@ -132,8 +132,7 @@ def create_word_search(words: List[str], difficulty: str) -> WordSearch:
     # Try with increasing grid sizes
     for size in range(min_size, max_size + 1):
         for _ in range(5):  # Try each size up to 5 times
-            ws = WordSearch(words)
-            ws.size = size
+            ws = WordSearch(words, size)
             
             # Try to place all words
             all_placed = True
@@ -148,8 +147,7 @@ def create_word_search(words: List[str], difficulty: str) -> WordSearch:
                 
     # If we get here, we couldn't place all words
     # Try one last time with a larger grid
-    ws = WordSearch(words)
-    ws.size = max_size + 5
+    ws = WordSearch(words, max_size + 5)
     for word in words:
         if not ws.place_word(word, difficulty):
             # If still can't place, try with a simpler direction set

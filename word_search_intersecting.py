@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import List, Tuple, Set, Optional
 
 class WordSearch:
-    def __init__(self, words: List[str]):
+    def __init__(self, words: List[str], size: Optional[int] = None):
         self.words = [word.upper().replace(' ', '') for word in words]
         self.longest_word = max(len(word) for word in self.words) if self.words else 0
-        self.size = max(self.longest_word + 2, 10)  # Minimum size 10x10
+        self.size = size or max(self.longest_word + 2, 10)  # Minimum size 10x10
         self.grid = [[None for _ in range(self.size)] for _ in range(self.size)]
         self.placed_words = set()
         self.word_positions = []  # Store (word, row, col, dx, dy) for each placed word
@@ -103,8 +103,7 @@ def create_intersecting_word_search(words: List[str], difficulty: str, max_attem
     # Try with increasing grid sizes
     for size in range(initial_size, initial_size + 15):  # Increased range for longer words
         for attempt in range(max_attempts):
-            ws = WordSearch(words)
-            ws.size = size
+            ws = WordSearch(words, size)
             ws.grid = [[None for _ in range(size)] for _ in range(size)]
             
             all_placed = True
@@ -122,8 +121,7 @@ def create_intersecting_word_search(words: List[str], difficulty: str, max_attem
     
     # If we get here, we couldn't place all words after multiple attempts
     # Try with a larger grid
-    ws = WordSearch(words)
-    ws.size = initial_size + 15  # Increased fallback size
+    ws = WordSearch(words, initial_size + 15)  # Increased fallback size
     ws.fill_grid()
     print("Warning: Could not place all words in the grid. Some words may be missing.")
     return ws
