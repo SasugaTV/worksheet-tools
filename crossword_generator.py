@@ -1,6 +1,6 @@
 """Crossword generator.
 
-Reads vocab + clue files from Input/ (.txt or .md) and writes an interactive
+Reads vocab + clue files from Input/Crossword/ (.txt or .md) and writes an interactive
 HTML puzzle plus a separate answer key to Output/. The layout is driven by the
 seed at the top of each input file, so the same seed + same vocab list always
 produces the same puzzle. See README.md for the input format.
@@ -459,7 +459,7 @@ def render_html(puzzle: PuzzleInput, layout: Layout, answer_key: bool) -> str:
 def process_file(input_path: Path, output_dir: Path) -> None:
     puzzle = parse_input(input_path)
     if not puzzle.entries:
-        print(f"Skipping {input_path.name}: no 'word | clue' lines found (plain word lists need clues for a crossword).")
+        print(f"Skipping {input_path.name}: no 'word | clue' lines found.")
         return
 
     seen, entries = set(), []
@@ -493,13 +493,16 @@ def process_file(input_path: Path, output_dir: Path) -> None:
 
 def main():
     base_dir = Path(__file__).parent
-    input_dir = base_dir / "Input"
+    # Crossword files live in their own subfolder because they use a different
+    # format (seed + clues) from the plain word lists the other tools read.
+    input_dir = base_dir / "Input" / "Crossword"
     output_dir = base_dir / "Output"
 
     output_dir.mkdir(exist_ok=True)
 
-    if not input_dir.exists() or not input_dir.is_dir():
-        print(f"Error: Input directory '{input_dir}' not found.")
+    if not input_dir.is_dir():
+        input_dir.mkdir(parents=True)
+        print(f"Created {input_dir}. Put crossword files there (see examples/crossword_example.md).")
         return
 
     input_files = sorted(list(input_dir.glob("*.txt")) + list(input_dir.glob("*.md")))
