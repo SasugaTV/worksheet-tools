@@ -9,7 +9,7 @@ def generate_missing_letters(word: str, difficulty: str) -> Tuple[str, str]:
     length = len(word)
     
     if length <= 2:
-        return ('_' * length, word)
+        return (' '.join('_' * length), ', '.join(word))
     
     # Determine how many letters to remove based on word length and difficulty
     if difficulty == 'easy':
@@ -28,22 +28,15 @@ def generate_missing_letters(word: str, difficulty: str) -> Tuple[str, str]:
     # Ensure we don't remove too many letters
     num_to_remove = min(num_to_remove, length - len(keep))
     
-    # Choose positions to blank out (not in keep set)
-    positions = [i for i in range(length) if i not in keep]
-    to_remove = random.sample(positions, min(num_to_remove, len(positions)))
-    
-    # Create the puzzle and solution
-    puzzle = []
-    solution = []
-    for i, char in enumerate(word):
-        if i in to_remove:
-            puzzle.append('_')
-            solution.append(char)
-        else:
-            puzzle.append(char)
-            solution.append(' ')
-    
-    return (' '.join(puzzle), ' '.join(solution))
+    # Choose positions to blank out (not in keep set, and only letters, never spaces or hyphens)
+    positions = [i for i in range(length) if i not in keep and word[i].isalpha()]
+    to_remove = sorted(random.sample(positions, min(num_to_remove, len(positions))))
+
+    # Create the puzzle, and a solution listing the missing letters in order
+    puzzle = ['_' if i in to_remove else char for i, char in enumerate(word)]
+    missing = [word[i] for i in to_remove]
+
+    return (' '.join(puzzle), ', '.join(missing))
 
 def process_file(input_path: str, output_path: str) -> None:
     with open(input_path, 'r', encoding='utf-8') as f:
@@ -66,15 +59,14 @@ def process_file(input_path: str, output_path: str) -> None:
         output.append(f"## {difficulty.upper()} MISSING LETTERS\n")
         output.append("Fill in the missing letters in each word.\n")
         
-        # Create puzzle and solution
-        for word in words:
-            puzzle, solution = generate_missing_letters(word, difficulty)
+        # Create each puzzle once so the solutions match the puzzles shown
+        puzzles = [generate_missing_letters(word, difficulty) for word in words]
+        for puzzle, _ in puzzles:
             output.append(f"- {puzzle}")
-        
+
         output.append("\n### SOLUTIONS\n")
-        for word in words:
-            puzzle, solution = generate_missing_letters(word, difficulty)
-            output.append(f"- {word.upper()}: {solution}")
+        for word, (puzzle, missing) in zip(words, puzzles):
+            output.append(f"- {puzzle} → **{word.upper()}** (missing: {missing})")
         
         output.extend(['\n'] * 3)  # Add three blank lines between difficulties
     
